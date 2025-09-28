@@ -1,0 +1,33 @@
+# Environment variables
+.env
+
+# Logs directory and files
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+
+# Rasa
+.rasa/
+models/*.tar.gz
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*~
+.tmp

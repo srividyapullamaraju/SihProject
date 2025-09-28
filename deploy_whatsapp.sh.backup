@@ -1,0 +1,213 @@
+#!/bin/bash
+
+echo "🚀 Deploying Health Awareness Chatbot to WhatsApp..."
+
+# Load environment variables
+source .env 2>/dev/null || echo "Warning: .env file not found"
+
+# Activate virtual environment if not already activated
+if [[ "$VIRTUAL_ENV" == "" ]]; then
+    if [ -d "venv" ]; then
+        source venv/bin/activate
+        echo "✅ Virtual environment activated"
+    else
+        echo "❌ Virtual environment not found. Please create one first."
+        exit 1
+    fi
+fi
+
+# Install required packages
+echo "📦 Installing required packages..."
+pip install twilio python-dotenv > /dev/null 2>&1
+
+# Check if credentials are set
+if [ -z "$TWILIO_ACCOUNT_SID" ] || [ -z "$TWILIO_AUTH_TOKEN" ]; then
+    echo "❌ Twilio credentials not found in .env file"
+    echo "Please add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to your .env file"
+    exit 1
+fi
+
+# Train the model
+echo "🎯 Training Rasa model..."
+rasa train --quiet
+
+# Kill any existing processes
+echo "🧹 Cleaning up existing processes..."
+pkill -f "rasa run actions" 2>/dev/null
+pkill -f "rasa run" 2>/dev/null  
+pkill -f "ngrok" 2>/dev/null
+
+# Start action server in background
+echo "⚡ Starting action server..."
+rasa run actions --port 5055 > actions.log 2>&1 &
+ACTION_PID=$!
+
+# Wait for action server to start
+echo "⏳ Waiting for action server to start..."
+sleep 5
+
+# Start ngrok tunnel in background
+echo "🌐 Starting ngrok tunnel..."
+ngrok http 5005 --log=stdout > ngrok.log 2>&1 &
+NGROK_PID=$!
+
+# Wait for ngrok to start
+echo "⏳ Waiting for ngrok to establish tunnel..."
+sleep 5
+
+# Get ngrok URL
+NGROK_URL=""
+for i in {1..10}; do
+    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    for tunnel in data.get('tunnels', []):
+        if tunnel.get('proto') == 'https':
+            print(tunnel['public_url'])
+            break
+except:
+    pass
+" 2>/dev/null)
+    
+    if [ ! -z "$NGROK_URL" ]; then
+        break
+    fi
+    echo "⏳ Waiting for ngrok URL... (attempt $i/10)"
+    sleep 2
+done
+
+if [ -z "$NGROK_URL" ]; then
+    echo "❌ Failed to get ngrok URL. Check ngrok.log for details."
+    cat ngrok.log
+    exit 1
+fi
+
+echo ""
+echo "🎉 Setup Complete!"
+echo "=================================="
+echo "📱 Ngrok URL: $NGROK_URL"
+echo "🔗 Twilio Webhook URL: $NGROK_URL/webhooks/twilio_whatsapp/webhook"
+echo "📊 Ngrok Web Interface: http://localhost:4040"
+echo "📋 Action Server Log: actions.log"
+echo "📋 Ngrok Log: ngrok.log"
+echo "=================================="
+echo ""
+echo "🔧 Next Steps:"
+echo "1. Copy the webhook URL above"
+echo "2. Go to Twilio Console > WhatsApp > Sandbox"
+echo "3. Paste the webhook URL"
+echo "4. Test by messaging the Twilio WhatsApp number"
+echo ""
+
+# Start Rasa server in background
+echo "🤖 Starting Rasa server..."
+rasa run --enable-api --cors "*" --port 5005 --credentials credentials.yml > rasa.log 2>&1 &
+RASA_PID=$!
+
+# Wait for Rasa server to start
+echo "⏳ Waiting for Rasa server to start..."
+sleep 8
+
+# Start WhatsApp webhook in background
+echo "📱 Starting WhatsApp webhook handler..."
+python whatsapp_webhook.py > webhook.log 2>&1 &
+WEBHOOK_PID=$!
+
+# Wait for webhook to start
+sleep 3
+
+# Start ngrok tunnel for webhook (port 5000)
+echo "🌐 Starting ngrok tunnel for webhook..."
+ngrok http 5000 --log=stdout > ngrok.log 2>&1 &
+NGROK_PID=$!
+
+# Wait for ngrok to start
+echo "⏳ Waiting for ngrok to establish tunnel..."
+sleep 5
+
+# Get ngrok URL
+NGROK_URL=""
+for i in {1..10}; do
+    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels 2>/dev/null | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    for tunnel in data.get('tunnels', []):
+        if tunnel.get('proto') == 'https':
+            print(tunnel['public_url'])
+            break
+except:
+    pass
+" 2>/dev/null)
+    
+    if [ ! -z "$NGROK_URL" ]; then
+        break
+    fi
+    echo "⏳ Waiting for ngrok URL... (attempt $i/10)"
+    sleep 2
+done
+
+if [ -z "$NGROK_URL" ]; then
+    echo "❌ Failed to get ngrok URL. Check ngrok.log for details."
+    cat ngrok.log
+    exit 1
+fi
+
+echo ""
+echo "🎉 Setup Complete!"
+echo "=================================="
+echo "📱 Ngrok URL: $NGROK_URL"
+echo "🔗 Twilio Webhook URL: $NGROK_URL/whatsapp"
+echo "📊 Ngrok Web Interface: http://localhost:4040"
+echo "📋 Action Server Log: actions.log"
+echo "📋 Rasa Server Log: rasa.log"
+echo "📋 Webhook Log: webhook.log"
+echo "📋 Ngrok Log: ngrok.log"
+echo "=================================="
+echo ""
+echo "🔧 Next Steps:"
+echo "1. Copy the webhook URL above: $NGROK_URL/whatsapp"
+echo "2. Go to Twilio Console > WhatsApp > Sandbox"
+echo "3. Paste the webhook URL"
+echo "4. Test by messaging the Twilio WhatsApp number"
+echo ""
+
+# Monitor logs
+echo "📊 Monitoring services... (Press Ctrl+C to stop)"
+echo "Action Server, Rasa Server, Webhook, and ngrok are running..."
+
+# Cleanup function
+cleanup() {
+    echo ""
+    echo "🛑 Shutting down services..."
+    kill $ACTION_PID 2>/dev/null
+    kill $RASA_PID 2>/dev/null
+    kill $WEBHOOK_PID 2>/dev/null
+    kill $NGROK_PID 2>/dev/null
+    pkill -f "rasa run" 2>/dev/null
+    pkill -f "whatsapp_webhook.py" 2>/dev/null
+    echo "✅ All services stopped"
+    exit 0
+}
+
+# Set trap for cleanup
+trap cleanup SIGINT SIGTERM
+
+# Keep monitoring
+while true; do
+    sleep 5
+    # Check if services are still running
+    if ! ps -p $ACTION_PID > /dev/null 2>&1; then
+        echo "❌ Action server stopped"
+        break
+    fi
+    if ! ps -p $RASA_PID > /dev/null 2>&1; then
+        echo "❌ Rasa server stopped"
+        break
+    fi
+    if ! ps -p $WEBHOOK_PID > /dev/null 2>&1; then
+        echo "❌ Webhook server stopped"
+        break
+    fi
+done

@@ -1,0 +1,44 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - health_question
+  - symptom_inquiry
+  - prevention_tips
+  - wellness_advice
+  - bot_challenge
+  - out_of_scope
+  - disease_outbreak_inquiry
+
+entities:
+  - symptom
+  - body_part
+  - health_topic
+
+responses:
+  utter_greet:
+  - text: "नमस्ते! स्वास्थ्य सहायक में आपका स्वागत है | Hello! Welcome to Health Assistant | ఆరోగ్య సహాయకుడికి స్వాగతం"
+
+  utter_goodbye:
+  - text: "Take care and stay healthy! Remember to maintain regular check-ups with your healthcare provider. 👋"
+
+  utter_health_disclaimer:
+  - text: "⚠️ Important: I provide general health awareness information only. For medical concerns, always consult qualified healthcare professionals."
+
+  utter_out_of_scope:
+  - text: "I'm focused on health awareness and preventive care. I can help with wellness tips, symptom awareness, and healthy lifestyle advice. What health topic would you like to know about?"
+
+  utter_emergency:
+  - text: "🚨 For medical emergencies, please contact emergency services immediately or visit the nearest hospital. Don't rely on text-based advice for urgent situations."
+
+actions:
+  - action_health_advice_multilingual
+  - action_symptom_checker_multilingual
+  - action_disease_outbreak_info
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

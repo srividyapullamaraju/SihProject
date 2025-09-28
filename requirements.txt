@@ -1,0 +1,10 @@
+# Python dependencies for Health Awareness Chatbot
+rasa==3.6.20
+rasa-sdk==3.6.2
+google-generativeai==0.8.2
+python-dotenv==1.0.1
+flask==3.0.3
+twilio==9.2.4
+aiohttp==3.10.5
+requests==2.32.3
+Pillow==10.4.0

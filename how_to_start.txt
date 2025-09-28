@@ -1,0 +1,107 @@
+# Rasa Health Bot - Start/Stop Commands
+# Copy and paste these commands in your terminal
+
+# ========================================
+# STEP 1: KILL ALL PREVIOUS PROCESSES
+# ========================================
+
+# Kill all Rasa processes
+pkill -f "rasa"
+
+# Kill all ngrok processes (fixes the "1 simultaneous session" error)
+pkill -f "ngrok"
+
+# Kill webhook processes
+pkill -f "whatsapp_webhook"
+pkill -f "python.*webhook"
+
+# Force kill processes using specific ports (if above doesn't work)
+sudo lsof -ti:5000 | xargs sudo kill -9 2>/dev/null
+sudo lsof -ti:5005 | xargs sudo kill -9 2>/dev/null
+sudo lsof -ti:5055 | xargs sudo kill -9 2>/dev/null
+sudo lsof -ti:4040 | xargs sudo kill -9 2>/dev/null
+sudo lsof -ti:4041 | xargs sudo kill -9 2>/dev/null
+
+# Wait for processes to fully terminate
+sleep 3
+
+# ========================================
+# STEP 2: START RASA HEALTH BOT SERVICES
+# ========================================
+
+# Navigate to project directory
+cd /home/akuro/pr
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Start Rasa action server (background) - logs to logs/
+nohup rasa run actions --port 5055 --debug > logs/actions.log 2>&1 &
+
+# Wait for action server to start
+sleep 5
+
+# Start Rasa server (background) - logs to logs/
+nohup rasa run --enable-api --cors "*" --port 5005 --debug > logs/rasa.log 2>&1 &
+
+# Wait for Rasa server to start
+sleep 5
+
+# Start WhatsApp webhook server (background) - logs to logs/
+nohup python whatsapp_webhook.py > logs/webhook.log 2>&1 &
+
+# Wait for webhook to start
+sleep 3
+
+# Start ngrok tunnel (background) - logs to logs/
+nohup ngrok http 5000 > logs/ngrok.log 2>&1 &
+
+# Wait for ngrok to establish tunnel
+sleep 5
+
+# ========================================
+# STEP 3: CHECK STATUS & GET WEBHOOK URL
+# ========================================
+
+# Check if all services are running
+echo "Checking running services..."
+ps aux | grep -E "(rasa|ngrok|webhook)" | grep -v grep
+
+# Get ngrok webhook URL for Twilio
+echo "Getting webhook URL..."
+curl -s http://localhost:4040/api/tunnels | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    for tunnel in data.get('tunnels', []):
+        if tunnel.get('proto') == 'https':
+            print('Webhook URL:', tunnel['public_url'] + '/whatsapp')
+            break
+except:
+    print('Could not get ngrok URL. Check ngrok.log')
+"
+
+# ========================================
+# STEP 4: TEST THE SETUP
+# ========================================
+
+# Test local webhook (Hindi message)
+curl -X POST http://localhost:5000/whatsapp \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "From=whatsapp%3A%2B919999999999&Body=मुझे%20बुखार%20है&AccountSid=test&MessageSid=test123"
+
+echo "Setup complete! Check the webhook URL above and configure it in Twilio Console."
+
+# ========================================
+# TROUBLESHOOTING COMMANDS
+# ========================================
+
+# If you need to check logs (now in logs/ directory):
+# tail -f logs/actions.log
+# tail -f logs/rasa.log  
+# tail -f logs/webhook.log
+# tail -f logs/ngrok.log
+
+# If ngrok still shows session limit error:
+# Go to https://dashboard.ngrok.com/agents and stop all sessions
+# Then restart ngrok with: ngrok http 5000
