@@ -1,0 +1,23 @@
+version: "3.1"
+
+rules:
+
+- rule: Say goodbye anytime the user says goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- rule: Health fallback for unrecognized messages
+  steps:
+  - intent: nlu_fallback
+  - action: action_health_advice_multilingual
+
+- rule: Bot challenge response
+  steps:
+  - intent: bot_challenge
+  - action: utter_health_disclaimer
+
+- rule: Out of scope response
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
