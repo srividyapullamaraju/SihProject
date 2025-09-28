@@ -1,1 +1,205 @@
+version: "3.1"
 
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - hey there
+    - goodmorning
+    - goodevening
+    - good afternoon
+    - hi doctor
+    - hello health assistant
+    - नमस्ते
+    - हैलो
+    - सुप्रभात
+    - नमस्कार
+    - హలో
+    - నమస్కారం
+    - శుభోదయం
+    - వేలకం
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - have a nice day
+    - see you later
+    - bye bye
+    - take care
+    - thank you for the health advice
+    - thanks for the tips
+    - अलविदा
+    - धन्यवाद
+    - స్వాస్థ్య సలహా కోసం ధన్యవాదాలు
+    - వెళ్లిపోతున్నాను
+    - विदाय्
+
+- intent: affirm
+  examples: |
+    - yes
+    - yep
+    - yeah
+    - right
+    - correct
+    - exactly
+    - हाँ
+    - जी हाँ
+    - सही है
+    - అవును
+    - సరైనది
+    - ఒప్పుకుంటాను
+
+- intent: deny
+  examples: |
+    - no
+    - nope
+    - not really
+    - never
+    - I don't think so
+    - नहीं
+    - ना
+    - गलत है
+    - లేదు
+    - అలా కాదు
+    - తప్పు
+
+- intent: health_question
+  examples: |
+    - How can I stay healthy?
+    - What are ways to prevent diseases?
+    - Give me health tips
+    - How to maintain good health?
+    - What should I eat for good health?
+    - healthy lifestyle tips
+    - मैं कैसे स्वस्थ रह सकता हूं?
+    - बीमारियों से कैसे बचा जा सकता है?
+    - स्वास्थ्य के लिए क्या खाना चाहिए?
+    - स्वस्थ जीवनशैली के टिप्स
+    - ఆరోగ్యంగా ఎలా ఉండాలి?
+    - వ్యాధుల నివారణ ఎలా చేయాలి?
+    - ఆరోగ్య టిప్స్ ఇవ్వండి
+    - మంచి ఆరోగ్యానికి ఏమి తినాలి?
+
+- intent: symptom_inquiry
+  examples: |
+    - I have a headache
+    - I feel dizzy
+    - What are symptoms of fever?
+    - I have stomach pain
+    - My throat is sore
+    - chest pain symptoms
+    - मुझे सिरदर्द है
+    - मुझे बुखार है
+    - पेट में दर्द हो रहा है
+    - गले में खराश है
+    - सीने में दर्द है
+    - నాకు తలనొప్పి ఉంది
+    - నాకు జ్వరం వచ్చింది
+    - కడుపు నొప్పి ఉంది
+    - గొంతు నొప్పి ఉంది
+    - ఛాతీ నొప్పి లక్షణాలు
+
+- intent: prevention_tips
+  examples: |
+    - How to prevent diabetes?
+    - Ways to avoid heart disease
+    - Prevention tips for high blood pressure
+    - How to prevent infections?
+    - cancer prevention
+    - मधुमेह से कैसे बचें?
+    - हृदय रोग से बचाव कैसे करें?
+    - उच्च रक्तचाप से कैसे बचें?
+    - संक्रमण से कैसे बचें?
+    - మधుమేహాన్ని ఎలా నివారించాలి?
+    - గుండె జబ్బులను ఎలా నివారించాలి?
+    - అధిక రక్తపోటును ఎలా నివారించాలి?
+    - వ్యాధులను ఎలా నివారించాలి?
+
+- intent: wellness_advice
+  examples: |
+    - Give me fitness tips
+    - How to exercise at home?
+    - Mental health tips
+    - Nutrition advice
+    - Sleep tips
+    - stress management
+    - फिटनेस के लिए टिप्स दें
+    - घर पर व्यायाम कैसे करें?
+    - मानसिक स्वास्थ्य की सलाह
+    - पोषण की सलाह
+    - ఫిట్‌నెస్ టిప్స్ ఇవ్వండి
+    - ఇంట్లో వ్యాయామం ఎలా చేయాలి?
+    - మానసిక ఆరోగ్య సలహా
+    - పోషకాహార సలహా
+
+- intent: bot_challenge
+  examples: |
+    - are you a bot?
+    - are you a human?
+    - am I talking to a bot?
+    - are you a doctor?
+    - can you diagnose me?
+    - क्या आप बॉट हैं?
+    - क्या आप डॉक्टर हैं?
+    - మీరు బాట్ నా?
+    - మీరు డాక్టరా?
+    - మీరు రోగ నిర్ధారణ చేయగలరా?
+
+- intent: out_of_scope
+  examples: |
+    - what's the weather?
+    - tell me a joke
+    - what's 2+2?
+    - play music
+    - order food
+    - book a flight
+    - what time is it?
+    - can you prescribe medicine?
+    - give me medical treatment
+    - मौसम कैसा है?
+    - मुझे कोई जोक सुनाओ
+    - दवा लिख दो
+    - వాతావరణం ఎలా ఉంది?
+    - జోక్ చెప్పండి
+    - మందు రాయండి
+
+- intent: disease_outbreak_inquiry
+  examples: |
+    - what are the current disease outbreaks?
+    - tell me about recent disease outbreaks
+    - any disease outbreaks in my state?
+    - current health alerts
+    - disease outbreak information
+    - latest disease surveillance reports
+    - epidemic information
+    - health emergency updates
+    - infectious disease outbreaks
+    - IDSP reports
+    - ministry of health outbreak data
+    - weekly disease surveillance
+    - recent epidemic alerts
+    - disease outbreak in india
+    - state wise disease outbreaks
+    - मेरे राज्य में कोई बीमारी का प्रकोप है?
+    - वर्तमान बीमारी प्रकोप की जानकारी
+    - हाल की महामारी की रिपोर्ट
+    - स्वास्थ्य मंत्रालय की रिपोर्ट
+    - रोग निगरानी रिपोर्ट
+    - संक्रामक रोग प्रकोप
+    - मेरे राज्य में हाल का रोग प्रकोप?
+    - బీమారి వ్యాప్తి గురించి చెప్పండి
+    - నా రాష్ట్రంలో ఏమైనా వ్యాధి వ్యాప్తి ఉందా?
+    - ప్రస్తుత ఆరోగ్య హెచ్చరికలు
+    - వ్యాధి వ్యాప్తి సమాచారం
+    - తాజా వ్యాధి నిఘా నివేదికలు
+    - మహమ్మారి సమాచారం
+    - అంటు వ్యాధుల వ్యాప్తి
+    - ఆరోగ్య మంత్రిత్వ శాఖ డేటా
+    - వారపు వ్యాధి నిఘా
+    - రాష్ట్రవారీ వ్యాధి వ్యాప్తి
